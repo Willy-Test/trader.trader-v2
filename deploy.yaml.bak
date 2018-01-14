@@ -1,0 +1,20 @@
+#Deploy the pod
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: trader-v2
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: trader
+        solution: stock-trader
+        version: v2
+    spec:
+      containers:
+      - name: trader
+        image: trader-v2:latest
+        ports:
+          - containerPort: 9080
+        imagePullPolicy: IfNotPresent
