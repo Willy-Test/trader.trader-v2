@@ -1,8 +1,6 @@
 apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
-  annotations:
-    sidecar.istio.io/status: injected-version-root@cc5c34bbd1ee-0.4.0-24089ea97c8d244493c93b499a666ddf4010b547
   creationTimestamp: null
   name: trader-v2
 spec:
@@ -11,7 +9,7 @@ spec:
   template:
     metadata:
       annotations:
-        sidecar.istio.io/status: injected-version-root@cc5c34bbd1ee-0.4.0-24089ea97c8d244493c93b499a666ddf4010b547
+        sidecar.istio.io/status: '{"version":"6abbe7c7c508e6dcbd844f45653076c0506b2bb092ac9354362b8dc696129258","initContainers":["istio-init","enable-core-dump"],"containers":["istio-proxy"],"volumes":["istio-envoy","istio-certs"]}'
       creationTimestamp: null
       labels:
         app: trader
@@ -28,18 +26,16 @@ spec:
       - args:
         - proxy
         - sidecar
-        - -v
-        - "2"
         - --configPath
         - /etc/istio/proxy
         - --binaryPath
         - /usr/local/bin/envoy
         - --serviceCluster
-        - trader
+        - sleep
         - --drainDuration
-        - 45s
+        - 2s
         - --parentShutdownDuration
-        - 1m0s
+        - 3s
         - --discoveryAddress
         - istio-pilot.istio-system:15003
         - --discoveryRefreshDelay
@@ -47,7 +43,7 @@ spec:
         - --zipkinAddress
         - zipkin.istio-system:9411
         - --connectTimeout
-        - 10s
+        - 1s
         - --statsdUdpAddress
         - istio-mixer.istio-system:9125
         - --proxyAdminPort
@@ -67,13 +63,13 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
-        image: docker.io/istio/proxy_debug:0.4.0
+        image: docker.io/istio/proxy:0.5.0
         imagePullPolicy: IfNotPresent
         name: istio-proxy
         resources: {}
         securityContext:
-          privileged: true
-          readOnlyRootFilesystem: false
+          privileged: false
+          readOnlyRootFilesystem: true
           runAsUser: 1337
         volumeMounts:
         - mountPath: /etc/istio/proxy
@@ -87,7 +83,7 @@ spec:
         - "15001"
         - -u
         - "1337"
-        image: docker.io/istio/proxy_init:0.4.0
+        image: docker.io/istio/proxy_init:0.5.0
         imagePullPolicy: IfNotPresent
         name: istio-init
         resources: {}
@@ -117,5 +113,4 @@ spec:
         secret:
           optional: true
           secretName: istio.default
-status: {}
 ---
